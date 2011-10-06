@@ -34,7 +34,8 @@ public class LoadPoc {
 				Thread.yield();
 			}
 			// wait a while to read the results
-			Thread.sleep(5000);
+			System.out.println("warming up cpu so load won't be 0...");
+			Thread.sleep(1000);
 
 			// and read the loads using the different methods
 			poc.readLoadWithSigar();
@@ -58,22 +59,29 @@ public class LoadPoc {
 		MBeanServerConnection conn = ManagementFactory.getPlatformMBeanServer();
 		OperatingSystemMXBean os = ManagementFactory.newPlatformMXBeanProxy(conn,
 				ManagementFactory.OPERATING_SYSTEM_MXBEAN_NAME, OperatingSystemMXBean.class);
+		//calculate a 5 sec average CPU load metric by hand
 		final long nanoBefore = System.nanoTime();
 		final long cpuBefore = os.getProcessCpuTime();
-		Thread.sleep(1000);
+		Thread.sleep(5000);
 		final long cpuAfter = os.getProcessCpuTime();
 		final long nanoAfter = System.nanoTime();
 		final double load = (cpuBefore == cpuAfter) ? 0d
 				: ((double) (cpuAfter - cpuBefore) * 100d / (double) (nanoAfter - nanoBefore));
+		
+		
 		System.out.println("CPU load: " + format.format(os.getSystemCpuLoad()) + "%");
 		System.out.println("Process load: " + format.format(os.getProcessCpuLoad()) + "%");
-		System.out.println("Calculated: " + format.format(load) + "%");
+		System.out.println("Calculated five sec average: " + format.format(load) + "%");
 	}
 
 	/*
 	 * works only on linux by reading "/proc/loadavg"
 	 */
 	private void readLoadOnLinux() throws Exception {
+		String os=System.getProperty("os.name");
+		if (!(os.indexOf( "nix") >=0 || os.indexOf( "nux") >=0)){
+			System.out.println("unable to run linux test in your OS: " + os);
+		}
 		InputStream in = null;
 		try {
 			System.out.println("\n-- LINUX /proc/loadavg");
