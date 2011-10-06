@@ -27,7 +27,7 @@ public class LoadPoc {
 		try {
 			
 			// generate some load
-			LoadGenerator gen=poc.new LoadGenerator(1);
+			LoadGenerator gen=poc.new LoadGenerator();
 			Thread t=new Thread(gen);
 			t.start();
 			while(!gen.isWorking()){
@@ -127,19 +127,16 @@ public class LoadPoc {
 	}
 
 	private class LoadGenerator implements Runnable {
-		private final double factor;
 		private AtomicBoolean stop = new AtomicBoolean(false);
 		private boolean working=false;
 
-		private LoadGenerator(double factor) {
-			this.factor = factor;
+		private LoadGenerator() {
 		}
 
 		@Override
 		public void run() {
 			Random rnd=new Random();
 			final List<Double> data=new LinkedList<Double>();
-			
 			for (int i=0;i<1024*1024;i++){
 				data.add(rnd.nextDouble());
 			}
@@ -148,11 +145,6 @@ public class LoadPoc {
 			while (!stop.get()){
 				Collections.shuffle(data);
 				Collections.sort(data);
-				try {
-					Thread.sleep(1000 * (int) factor);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
 			}
 		}
 
